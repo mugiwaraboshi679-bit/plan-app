@@ -599,9 +599,11 @@ async function signOut() {
 }
 
 db.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    currentUser = session.user;
-    await loadUserData();
+  if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+    if (!currentUser) {
+      currentUser = session.user;
+      await loadUserData();
+    }
   }
 });
 
