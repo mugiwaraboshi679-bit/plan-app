@@ -539,7 +539,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 const SUPA_URL = 'https://fkfcnarifyemfqifbrjh.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZmNuYXJpZnllbWZxaWZicmpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTg2ODMsImV4cCI6MjA5MzI5NDY4M30.Qcfxyp7F2qYQoac9e7I3JxZ6Oij5z10LvRsY5BpqMg8';
 const { createClient } = supabase;
-const db = createClient(SUPA_URL, SUPA_ANON);
+const db = createClient(SUPA_URL, SUPA_ANON, {
+  auth: {
+    storage: window.localStorage,
+    storageKey: 'plan-app-auth',
+    flowType: 'implicit',
+    detectSessionInUrl: true,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 let currentUser = null;
 let userProfile = null;
