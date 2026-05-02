@@ -15,6 +15,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 /* SCREENS */
 .screen{display:none;min-height:100vh;}
 .screen.active{display:block;}
+#screen-onboard,#screen-prompt,#screen-app{position:fixed;top:0;left:0;width:100%;height:100%;overflow-y:auto;z-index:1;}
+#screen-login{position:fixed;top:0;left:0;width:100%;height:100%;overflow-y:auto;z-index:1;display:none;}
+#screen-login.active{display:flex;}
+#screen-loading{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;display:none;}
+#screen-loading.active{display:flex;}
 
 /* LOGIN */
 #screen-login{display:flex;align-items:center;justify-content:center;background:var(--bg);}
@@ -576,6 +581,33 @@ const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sun
 
 // ─── AUTH ───
 async function init() {
+  // Handle OAuth redirect — token is in the URL hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    // Let Supabase process the token from URL
+    const { data: { session }, error } = await db.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      await loadUserData();
+      return;
+    }
+    // If getSession didn't work, try setting session from URL manually
+    const params = new URLSearchParams(hash.replace('#',''));
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (access_token) {
+      const { data, error: e2 } = await db.auth.setSession({ access_token, refresh_token });
+      if (data?.session) {
+        currentUser = data.session.user;
+        window.history.replaceState({}, document.title, window.location.pathname);
+        await loadUserData();
+        return;
+      }
+    }
+  }
+  
   const { data: { session } } = await db.auth.getSession();
   if (session) {
     currentUser = session.user;
